@@ -12,23 +12,25 @@
 % T: final time
 
 % run 
-% lec1_1d_heat(10,0.5,1.0);
-% lec1_1d_heat(20,0.5,1.0);
-% lec1_1d_heat(100,0.5,0.5);
+% lec1_1d_heat_explicit(10,0.5,1.0);
+% lec1_1d_heat_explicit(20,0.5,1.0);
+% lec1_1d_heat_explicit(100,0.5,1.0);
 
-% lec1_1d_heat(100,0.51,0.1)
-% lec1_1d_heat(100,0.501,0.1);
-% lec1_1d_heat(100,0.501,1);
+% lec1_1d_heat_explicit(100,0.51,0.1)
+% lec1_1d_heat_explicit(100,0.501,0.1);
+% lec1_1d_heat_explicit(100,0.501,1);
 
-function error_inf=lec_1d_heat(N,r0,T);
+function error_inf=lec_1d_heat_explicit(N,r0,T)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 1: initialize the grid and initialize u^0_j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize the grid
 x_left = 0.0;
 x_right = 1.0;
-x = linspace(0,1,N+1);
-dx = 1/N;
+x = linspace(x_left,x_right,N+1);
+% x is a row vector, we want u to be a column vetor so take transpose here
+x = x';
+dx = (x_right-x_left)/N;
 
 % compute dt= r*dx^2
 dt = r0*dx^2;
@@ -52,15 +54,15 @@ for time_step = 1:N_time_step
 
     % Loop over inner points
     for j = 2:N
-        u(j) = (1-2*r)*u_old(j)+r*u_old(j-1)+r*u_old(j+1);
+        u(j) = (1-2*r)*u_old(j)+r*u_old(j-1)+r*u_old(j+1)+ dt* f(x(j),(time_step-1)*dt);
+           % The first index is 1, which means that x(1) -> 0*dx
     end
     
     % Vectorize version
     %u(2:N) = (1-2*r)*u_old(2:N)+r*u_old(1:N-1)+r*u_old(3:N+1);
-
     % impose BC
     % u(N+1)=0;
-    % u(N)=0;
+    % u(1)=0;
 
 end
 toc;
