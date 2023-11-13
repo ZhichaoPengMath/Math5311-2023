@@ -1,6 +1,4 @@
-% sample run: lec21_mg_demo_smoothing(100);
-
-function error=lec21_mg_demo_smoothing(N,N_iter)
+function error=lec21_cg_smoothing(N,N_iter)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 1: initialize the grid and initialize u^0_j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,7 +28,7 @@ for j = 1:N
 
     A(j,j) = 2;
 end
-%A = sparse(A);
+A = sparse(A);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 3: Consider a random vector as the exact solution
@@ -46,39 +44,40 @@ residual_history  = zeros(N_iter,1);
 residual_history2 = zeros(N_iter,1);
 tol = 1e-10;
 
-u_old = zeros(N,1);
-u     = zeros(N,1);
+u = zeros(N,1);
 
 % Matrix free implementation
 u_old(:) = 0.0;
 close all
 figure(1)
+
 tic;
+tmp = A*u;
+r = b-tmp;
+p = r;
+rtr = dot(r,r);
+rtr0 = rtr;
 for iter = 1:N_iter
-    for j = 1:N
-        if (j==1)
-            u(j) = 0.5*(b(j)+u_old(j+1));
-        elseif (j==N)
-            u(j) = 0.5*(b(j)+u_old(j-1));
-        else
-            u(j) = 0.5*(b(j)+u_old(j+1)+u_old(j-1));
-        end
-    end
-    
-    u_old = u;
-    res = A*u-b;
+    plot(u-u_exact,'-bo','Linewidth',1.5)
+    q = A*p;
+    alpha = rtr/dot(p,q);
+    u = u + alpha*p;
+    r = r - alpha*q;
+    rtrold = rtr;
+    rtr = dot(r,r);
+
+    beta = rtr/rtrold;
+    p = beta*p + r;
+
 
     if (mod(iter,5)==0)
-        plot(u-u_exact,'-bo','Linewidth',1.5)
+       plot(u-u_exact,'-bo','Linewidth',1.5)
     end
     pause(0.01)
-    
 
-    if (norm(res)/norm(b)<1e-6)
+    if (norm(r)/norm(b) < tol)
         break;
     end
-    residual_history(iter) = norm(res)/norm(b);
-
 
 end
 toc;
