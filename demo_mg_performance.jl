@@ -39,15 +39,17 @@ Random.seed!(10086)
    
 
     if (solver_option==1)
-        p = aspreconditioner(ml,AlgebraicMultigrid.V());
-        time = @elapsed sol, cg_log = cg(A,rhs, Pl=p, log=true, reltol=1e-8);
-    elseif (solver_option==2)
         p = aspreconditioner(ml,AlgebraicMultigrid.W());
         time = @elapsed sol, cg_log = cg(A,rhs, Pl=p, log=true, reltol=1e-8);
+        iter = cg_log.iters
+    elseif (solver_option==2)
+        time = @elapsed sol,cg_log = AlgebraicMultigrid._solve(ml,rhs,AlgebraicMultigrid.W(),log=true,reltol=1e-8);
+        iter = length(cg_log)
     else
         time = @elapsed sol, cg_log = cg(A,rhs, log=true, reltol=1e-8);
+        iter = cg_log.iters
     end
-    return time,cg_log.iters,norm(sol-x_exact,Inf)
+    return time,iter,norm(sol-x_exact,Inf)
  end
 
 
@@ -62,10 +64,10 @@ for i = 1:length(N_array)
     time,iter,error = test_solver(N,solver_option)
 
     if (solver_option == 1)
-        println("V cycle AMG preconditioner")
+        println("CG with W cycle AMG as the preconditioner")
         println(" DOFs = ",N^3," Time = ",time," Iter = ",iter," l-2 error = ",error)
     elseif (solver_option == 2)
-        println("W cycle AMG preconditioner")
+        println("MG with W cycle")
         println(" DOFs = ",N^3," Time = ",time," Iter = ",iter," l-2 error = ",error)
     else
         println("CG")
