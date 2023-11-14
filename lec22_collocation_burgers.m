@@ -11,6 +11,33 @@ h = (x_right-x_left)/N;
 x = h*(1:N)';
 dx = 1/N;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Step 2: show accuracy for computing derivative of exp(sin(x))
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+k = [0:N/2-1 0 -N/2+1:-1]';
+
+v = exp(sin(x));
+vx_hat = 1j*k.*fft(v);
+vx = real(ifft(vx_hat));
+
+vx_exact = v.*cos(x);
+
+max_error = max(abs(vx_exact-vx));
+close all
+figure(1)
+plot(x,vx_exact,'r-','Linewidth',1.5);
+hold on
+plot(x,vx,'bo');
+legend('Exact','Collocation');
+set(gca,'FontSize',15);
+
+fprintf('Max error at collocation points %e\n',max_error);
+pause()
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Step 3: solve burgers equation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Initialization
 u0 = sin(x);
 
 dt = dx;
@@ -20,13 +47,8 @@ dt = time_final/Nt;
 u_old = u0;
 u = u0;
 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Step 2: time evolution
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure(1)
-close all
+% Time evolution
+figure(2)
 set(gca,'FontSize',15);
 k = [0:N/2-1 0 -N/2+1:-1]';
 for time_step = 1:Nt
